@@ -1,0 +1,12 @@
+# HACI Quick Start Dependencies
+langgraph>=0.0.25
+langchain>=0.1.0
+langchain-anthropic>=0.1.0
+langchain-openai>=0.0.5
+langsmith>=0.0.80
+pydantic>=2.5.0
+
+# Optional: For web demo
+fastapi>=0.109.0
+uvicorn>=0.27.0
+jinja2>=3.1.0
