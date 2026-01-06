@@ -239,8 +239,8 @@ CONFIDENCE_THRESHOLDS = {
 Ready for the full HACI experience?
 
 1. **[Full Repository](https://github.com/shawnbray205/HACI)** - Complete implementation with 10 agents
-2. **[Technical Documentation](https://github.com/shawnbray205/HACI/docs](https://github.com/shawnbray205/HACI/tree/main/docs/architecture)** - Architecture deep-dive
-3. **[Integration Guide](https://github.com/shawnbray205/HACI/docs/integration](https://github.com/shawnbray205/HACI/blob/main/docs/HACI_Integration_Cookbooks.md)** - Connect your tools
+2. **[Technical Documentation](https://github.com/shawnbray205/HACI/tree/main/docs/architecture)** - Architecture deep-dive
+3. **[Integration Guide](https://github.com/shawnbray205/HACI/blob/main/docs/HACI_Integration_Cookbooks.md)** - Connect your tools
 
 ---
 
