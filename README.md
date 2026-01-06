@@ -1,6 +1,6 @@
 # HACI Quick Start
 
-> **Get HACI running in 15 minutes** and see AI-powered support automation in action
+> **Experience AI-powered incident investigation in 5 minutes**
 
 <div align="center">
 
@@ -8,142 +8,229 @@
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+**[Live Demo](#quick-start) • [Full Documentation](https://github.com/shawnbray205/HACI) • [How It Works](#how-it-works)**
+
 </div>
+
+---
+
+## What This Demo Shows
+
+This quick start demonstrates HACI's core **Harness Pattern** - the THINK→ACT→OBSERVE→EVALUATE loop that powers intelligent incident investigation:
+
+| Phase | What Happens | You'll See |
+|-------|--------------|------------|
+| 🧠 **THINK** | LLM forms hypotheses about root cause | Hypothesis generation with confidence scores |
+| ⚡ **ACT** | Execute monitoring tools (Datadog, GitHub, etc.) | Real tool calls with parameters and results |
+| 👁️ **OBSERVE** | LLM analyzes evidence | Pattern detection and correlation |
+| ✅ **EVALUATE** | Assess confidence and decide action | Confidence-based action gating |
+
+**Key Feature: Confidence-Based Action Gating**
+
+```
+≥95% → 🟢 Auto-Execute (no human needed)
+85-94% → 🟡 Execute with Review notification  
+70-84% → 🟠 Require Human Approval
+<70% → 🔴 Continue Investigation or Escalate
+```
+
+---
+
+## Quick Start
+
+### Option A: Web Demo (Recommended)
+
+```bash
+# Clone and setup
+git clone https://github.com/shawnbray205/HACI-quickstart.git
+cd HACI-quickstart
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set your API key (Anthropic recommended)
+export ANTHROPIC_API_KEY="sk-ant-your-key-here"
+# OR: export OPENAI_API_KEY="sk-your-key-here"
+
+# Launch the web demo
+python web_demo.py
+```
+
+Open **http://localhost:8080** and click "Start Investigation"
+
+You'll see:
+- Real-time harness loop visualization
+- LLM reasoning displayed as it happens
+- Tool execution with actual parameters
+- Confidence meter with threshold indicators
+- Final resolution with actionable command
+
+### Option B: Terminal Demo
+
+```bash
+# Same setup as above, then:
+python haci_demo.py
+```
+
+This shows a detailed terminal output with:
+- Color-coded phases
+- LLM prompts and responses
+- Tool execution details
+- Confidence assessment
+- Production behavior explanation
 
 ---
 
 ## What You'll Experience
 
-In this quick start, you'll:
+### 1. Hypothesis Formation (THINK)
+```
+🧠 THINK - Forming Hypotheses
+────────────────────────────────────────────────────────────
 
-1. ✅ Launch a minimal HACI environment
-2. ✅ Submit your first automated investigation
-3. ✅ See the **THINK→ACT→OBSERVE→EVALUATE** harness pattern in action
-4. ✅ Experience confidence-based human approval workflows
+  🤖 LLM Call (ANTHROPIC):
+  ┌─ Phase: THINK
+  ├─ Prompt: "Investigate this ticket..."
+  ├─ Reasoning:
+  │    The timing of errors starting at 14:21 suggests a recent
+  │    change triggered this issue. Need to correlate with deployment.
+  └─ Response keys: ['hypotheses', 'next_actions', 'reasoning']
 
-**Time:** 15 minutes  
-**Prerequisites:** Docker OR Python 3.11+, plus an API key (Anthropic recommended)
-
----
-
-## Option A: Docker Quick Start (5 minutes)
-
-The fastest way to see HACI in action.
-
-### Step 1: Clone and Configure
-
-```bash
-git clone https://github.com/shawnbray205/HACI-quickstart.git
-cd haci-quickstart
-
-cp .env.example .env
+  📊 Hypotheses Generated:
+     1. Recent deployment changed connection pool configuration
+        Confidence: [███████░░░] 75%
+        Evidence needed: deployment logs, config changes
 ```
 
-### Step 2: Add Your API Key
+### 2. Tool Execution (ACT)
+```
+⚡ ACT - Gathering Evidence
+────────────────────────────────────────────────────────────
 
-Edit `.env`:
+  🔧 Tool: datadog_logs_search
+     ├─ Description: Search application logs in Datadog
+     ├─ Parameters: {"query": "service:api-gateway status:error"}
+     └─ Result: Found 47 log entries | 47 errors | Error rate: 23.5%
 
-```bash
-# Anthropic recommended
-ANTHROPIC_API_KEY=sk-ant-your-key-here
-
-# Or use OpenAI
-# OPENAI_API_KEY=sk-your-key-here
+  🔧 Tool: github_deployments  
+     ├─ Description: Get recent deployments from GitHub
+     ├─ Parameters: {"repo": "main-service", "limit": 5}
+     └─ Result: Found deployment abc123 at 2024-01-15T14:20:00Z
 ```
 
-### Step 3: Launch
+### 3. Evidence Analysis (OBSERVE)
+```
+👁️ OBSERVE - Analyzing Evidence
+────────────────────────────────────────────────────────────
 
-```bash
-docker-compose up -d
+  🔍 Findings Extracted:
+     🔴 [CRITICAL] Deployment abc123 reduced connection pool from 10 to 5
+        Confidence: 98%
+
+     🔴 [CRITICAL] Database connections at 100% capacity (5/5 active)
+        Confidence: 96%
+
+  🔗 Correlations Identified:
+     • Deployment abc123 (14:20) → Pool exhaustion (14:21) → 502 errors
 ```
 
-### Step 4: Open the Demo
-
-Navigate to: **http://localhost:8080**
-
-Click **"Submit Test Ticket"** and watch the investigation unfold in real-time!
-
----
-
-## Option B: Python Quick Start (15 minutes)
-
-For developers who want to understand the code.
-
-### Step 1: Setup
-
-```bash
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-pip install -r requirements.txt
+### 4. Confidence Assessment (EVALUATE)
 ```
+✅ EVALUATE - Confidence Assessment
+────────────────────────────────────────────────────────────
 
-### Step 2: Configure
+  📊 Confidence Score:
+     [████████████████████████████████████████] 94%
 
-```bash
-export ANTHROPIC_API_KEY="sk-ant-your-key-here"
-```
+     Confidence Thresholds:
+       ○ 95% - Auto Execute
+       ✓ 85% - Execute With Review
+       ✓ 70% - Require Approval
 
-### Step 3: Run the Demo
+  ⚡ Action Decision:
+     🟡 EXECUTE WITH REVIEW
+     Confidence 85-94% - executing with post-action review notification
 
-```bash
-python haci_demo.py
-```
+  🎯 Root Cause:
+     Connection pool misconfiguration in deployment abc123 reduced
+     pool_size from 10 to 5, causing immediate exhaustion under normal load
 
-You'll see a simulated investigation with the harness pattern:
-
-```
-🎯 Submitting ticket: API returning 502 errors intermittently
-============================================================
-🧠 THINK: Forming hypothesis...
-⚡ ACT: Querying Datadog for recent 502 errors...
-👁️ OBSERVE: Found 47 502 errors in last hour, spike at 14:23 UTC
-🧠 THINK: Correlating with deployment timeline...
-⚡ ACT: Checking GitHub deployments...
-👁️ OBSERVE: Deployment at 14:20 UTC - config change to connection pool
-✅ EVALUATE: Root cause identified with 94% confidence
-
-📋 RESOLUTION:
-   Root Cause: Connection pool misconfiguration in deployment abc123
-   Recommended Fix: Rollback deployment or increase pool_size to 50
-   Confidence: 94%
-   Action: AUTO-EXECUTE (above 95% threshold for review)
+  💡 Recommended Resolution:
+     Action: Rollback deployment abc123 to restore pool_size=10
+     $ kubectl rollout undo deployment/api-gateway --to-revision=previous
 ```
 
 ---
 
-## What's Happening Under the Hood
-
-The demo implements HACI's core **harness pattern**:
+## How It Works
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    HARNESS LOOP                         │
-│                                                         │
-│   ┌──────────┐     ┌─────────┐     ┌──────────────┐    │
-│   │  THINK   │────▶│   ACT   │────▶│   OBSERVE    │    │
-│   │          │     │         │     │              │    │
-│   │ Hypothesize    │ Execute │     │ Analyze      │    │
-│   │ Plan next │    │ tools   │     │ results      │    │
-│   └──────────┘     └─────────┘     └──────────────┘    │
-│         ▲                                │              │
-│         │          ┌──────────┐          │              │
-│         └──────────│ EVALUATE │◀─────────┘              │
-│                    │          │                         │
-│                    │ Confidence│                        │
-│                    │ Gate      │                        │
-│                    └──────────┘                         │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                      HACI HARNESS                           │
+│                                                             │
+│   ┌──────────┐    ┌─────────┐    ┌──────────┐              │
+│   │  THINK   │───▶│   ACT   │───▶│ OBSERVE  │              │
+│   │          │    │         │    │          │              │
+│   │ LLM forms│    │ Execute │    │ LLM      │              │
+│   │ hypotheses    │ tools   │    │ analyzes │              │
+│   └──────────┘    └─────────┘    └──────────┘              │
+│         ▲                              │                    │
+│         │         ┌──────────┐         │                    │
+│         └─────────│ EVALUATE │◀────────┘                    │
+│                   │          │                              │
+│                   │ Confidence                              │
+│                   │ Gate     │                              │
+│                   └──────────┘                              │
+│                        │                                    │
+│         ┌──────────────┼──────────────┐                    │
+│         ▼              ▼              ▼                    │
+│    ┌─────────┐   ┌──────────┐   ┌─────────┐               │
+│    │  <70%   │   │  70-94%  │   │  ≥95%   │               │
+│    │Continue │   │  Human   │   │  Auto   │               │
+│    │  Loop   │   │ Approval │   │ Execute │               │
+│    └─────────┘   └──────────┘   └─────────┘               │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### Confidence-Based Action Gating
+---
 
-| Confidence | Action |
-|------------|--------|
-| ≥ 95% | Auto-execute |
-| 85-94% | Execute with review |
-| 70-84% | Require approval |
-| < 70% | Human-led |
+## Configuration
+
+### Environment Variables
+
+```bash
+# LLM Provider (choose one)
+ANTHROPIC_API_KEY=sk-ant-...    # Recommended
+OPENAI_API_KEY=sk-...            # Alternative
+
+# Demo settings
+DEMO_PORT=8080                   # Web demo port
+```
+
+### Confidence Thresholds
+
+Edit in `haci_demo.py`:
+
+```python
+CONFIDENCE_THRESHOLDS = {
+    "auto_execute": 95,      # No human needed
+    "execute_review": 85,    # Execute + notify
+    "require_approval": 70,  # Wait for approval
+}
+```
+
+---
+
+## Demo vs Production
+
+| Feature | This Demo | Full HACI |
+|---------|-----------|-----------|
+| Agents | 1 (meta-orchestrator) | 10 specialized agents |
+| Tools | 4 mock integrations | 50+ real integrations |
+| LLM | Claude/GPT-4 | Multi-provider routing |
+| Approval | Simulated | Slack/Email/PagerDuty |
+| Persistence | In-memory | PostgreSQL + Redis |
+| Observability | Console logs | LangSmith + Grafana |
 
 ---
 
@@ -151,34 +238,28 @@ The demo implements HACI's core **harness pattern**:
 
 Ready for the full HACI experience?
 
-| Resource | Description |
-|----------|-------------|
-| [Full Repository](https://github.com/shawnbray205/HACI) | Complete HACI implementation |
-| [Documentation](https://docs.haci.ai) | Comprehensive guides |
-| [LangSmith Guide](./docs/langsmith-guide.md) | Observability setup |
+1. **[Full Repository](https://github.com/shawnbray205/HACI)** - Complete implementation with 10 agents
+2. **[Technical Documentation](https://github.com/shawnbray205/HACI/docs)** - Architecture deep-dive
+3. **[Integration Guide](https://github.com/shawnbray205/HACI/docs/integration)** - Connect your tools
 
 ---
 
 ## Troubleshooting
 
-### "No module named 'langgraph'"
+### No API key
+```
+⚠ Demo Mode (No API Key)
+```
+The demo works without an API key using realistic mock responses. Add a key to see real LLM reasoning.
 
+### Module not found
 ```bash
-pip install langgraph langchain-anthropic
+pip install anthropic fastapi uvicorn pydantic
 ```
 
-### "Invalid API key"
-
+### Port in use
 ```bash
-echo $ANTHROPIC_API_KEY  # Verify it's set
-```
-
-### Docker won't start
-
-```bash
-docker-compose down -v
-docker-compose up -d
-docker-compose logs
+DEMO_PORT=3000 python web_demo.py
 ```
 
 ---
@@ -191,6 +272,8 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 <div align="center">
 
-**You're 15 minutes away from AI-powered automation!** 🚀
+**Built with ❤️ for the future of AI-powered operations**
+
+[⭐ Star on GitHub](https://github.com/shawnbray205/HACI) • [📖 Documentation](https://github.com/shawnbray205/HACI) • [🐛 Report Bug](https://github.com/shawnbray205/HACI/issues)
 
 </div>
