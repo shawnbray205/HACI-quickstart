@@ -523,16 +523,24 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
         // Check LLM provider on load
         fetch('/provider').then(r => r.json()).then(data => {
             const badge = document.getElementById('provider-badge');
+            let text = '';
+            let color = '#10b981';
+            
             if (data.provider === 'anthropic') {
-                badge.textContent = '✓ Using Claude (Anthropic)';
-                badge.style.color = '#10b981';
+                text = '✓ Claude (Anthropic)';
             } else if (data.provider === 'openai') {
-                badge.textContent = '✓ Using GPT-4 (OpenAI)';
-                badge.style.color = '#10b981';
+                text = '✓ GPT-4 (OpenAI)';
             } else {
-                badge.textContent = '⚠ Demo Mode (No API Key)';
-                badge.style.color = '#f59e0b';
+                text = '⚠ Demo Mode (No API Key)';
+                color = '#f59e0b';
             }
+            
+            if (data.langsmith_enabled) {
+                text += ` | LangSmith: ${data.langsmith_project}`;
+            }
+            
+            badge.textContent = text;
+            badge.style.color = color;
         });
         
         async function startInvestigation() {
@@ -706,7 +714,13 @@ async def health():
 @app.get("/provider")
 async def get_provider():
     llm = LLMClient()
-    return {"provider": llm.provider}
+    langsmith_enabled = llm.use_langchain
+    project = os.environ.get("LANGCHAIN_PROJECT", "default") if langsmith_enabled else None
+    return {
+        "provider": llm.provider,
+        "langsmith_enabled": langsmith_enabled,
+        "langsmith_project": project
+    }
 
 
 @app.post("/investigate")

@@ -203,8 +203,52 @@ This shows a detailed terminal output with:
 ANTHROPIC_API_KEY=sk-ant-...    # Recommended
 OPENAI_API_KEY=sk-...            # Alternative
 
+# LangSmith Tracing (recommended)
+LANGCHAIN_API_KEY=lsv2_...       # Get from smith.langchain.com
+LANGCHAIN_TRACING_V2=true        # Enable tracing
+LANGCHAIN_PROJECT=haci-quickstart # Project name
+
 # Demo settings
 DEMO_PORT=8080                   # Web demo port
+```
+
+---
+
+## LangSmith Integration
+
+When LangSmith is enabled, you get **full observability** into every LLM call:
+
+![LangSmith Trace](https://smith.langchain.com)
+
+### What You'll See in LangSmith:
+
+- **Complete Traces**: Every THINK→ACT→OBSERVE→EVALUATE cycle
+- **Input/Output**: Full prompts and responses for each LLM call
+- **Latency**: How long each step takes
+- **Token Usage**: Cost tracking per investigation
+- **Debug Info**: When things go wrong, see exactly why
+
+### Enable LangSmith:
+
+```bash
+# 1. Get your API key from https://smith.langchain.com
+export LANGCHAIN_API_KEY="lsv2_your-key"
+
+# 2. Enable tracing
+export LANGCHAIN_TRACING_V2="true"
+
+# 3. Set project name
+export LANGCHAIN_PROJECT="haci-quickstart"
+
+# 4. Run the demo
+python haci_demo.py
+```
+
+You'll see in the terminal:
+```
+✓ LLM Provider: Claude (Anthropic)
+✓ LangSmith Tracing: ENABLED (project: haci-quickstart)
+  View traces at: https://smith.langchain.com
 ```
 
 ### Confidence Thresholds
@@ -239,8 +283,8 @@ CONFIDENCE_THRESHOLDS = {
 Ready for the full HACI experience?
 
 1. **[Full Repository](https://github.com/shawnbray205/HACI)** - Complete implementation with 10 agents
-2. **[Technical Documentation](https://github.com/shawnbray205/HACI/tree/main/docs/architecture)** - Architecture deep-dive
-3. **[Integration Guide](https://github.com/shawnbray205/HACI/blob/main/docs/HACI_Integration_Cookbooks.md)** - Connect your tools
+2. **[Technical Documentation](https://github.com/shawnbray205/HACI/docs)** - Architecture deep-dive
+3. **[Integration Guide](https://github.com/shawnbray205/HACI/docs/integration)** - Connect your tools
 
 ---
 

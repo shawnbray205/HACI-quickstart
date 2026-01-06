@@ -132,24 +132,78 @@ MOCK_DATA = {
 
 
 # =============================================================================
-# LLM CLIENT
+# LLM CLIENT WITH LANGSMITH SUPPORT
 # =============================================================================
 
 class LLMClient:
-    """Unified LLM client supporting Anthropic and OpenAI."""
+    """
+    Unified LLM client supporting Anthropic and OpenAI.
+    
+    Automatically integrates with LangSmith when environment variables are set:
+        LANGCHAIN_TRACING_V2=true
+        LANGCHAIN_API_KEY=your-langsmith-key
+        LANGCHAIN_PROJECT=haci-quickstart
+    """
     
     def __init__(self):
         self.provider = None
         self.client = None
+        self.use_langchain = False
         self._setup_client()
     
     def _setup_client(self):
         """Initialize the LLM client based on available API keys."""
+        
+        # Check if LangSmith tracing is enabled - if so, use LangChain
+        langsmith_enabled = (
+            os.environ.get("LANGCHAIN_TRACING_V2", "").lower() == "true" and
+            os.environ.get("LANGCHAIN_API_KEY")
+        )
+        
+        if langsmith_enabled:
+            self._setup_langchain_client()
+            if self.client:
+                return
+        
+        # Fall back to direct API clients
+        self._setup_direct_client()
+    
+    def _setup_langchain_client(self):
+        """Setup LangChain client for LangSmith tracing."""
+        if os.environ.get("ANTHROPIC_API_KEY"):
+            try:
+                from langchain_anthropic import ChatAnthropic
+                self.client = ChatAnthropic(
+                    model="claude-sonnet-4-20250514",
+                    max_tokens=1024,
+                )
+                self.provider = "anthropic"
+                self.use_langchain = True
+                return
+            except ImportError:
+                pass
+        
+        if os.environ.get("OPENAI_API_KEY"):
+            try:
+                from langchain_openai import ChatOpenAI
+                self.client = ChatOpenAI(
+                    model="gpt-4-turbo-preview",
+                    max_tokens=1024,
+                )
+                self.provider = "openai"
+                self.use_langchain = True
+                return
+            except ImportError:
+                pass
+    
+    def _setup_direct_client(self):
+        """Setup direct API client (no LangSmith tracing)."""
         if os.environ.get("ANTHROPIC_API_KEY"):
             try:
                 from anthropic import Anthropic
                 self.client = Anthropic()
                 self.provider = "anthropic"
+                self.use_langchain = False
                 return
             except ImportError:
                 pass
@@ -159,14 +213,22 @@ class LLMClient:
                 from openai import OpenAI
                 self.client = OpenAI()
                 self.provider = "openai"
+                self.use_langchain = False
                 return
             except ImportError:
                 pass
         
         self.provider = "mock"
+        self.use_langchain = False
     
     async def generate(self, system: str, prompt: str, max_tokens: int = 1024) -> str:
         """Generate a response from the LLM."""
+        
+        # LangChain path (with LangSmith tracing)
+        if self.use_langchain:
+            return await self._generate_langchain(system, prompt)
+        
+        # Direct API path
         if self.provider == "anthropic":
             response = self.client.messages.create(
                 model="claude-sonnet-4-20250514",
@@ -189,6 +251,19 @@ class LLMClient:
         
         else:
             return self._mock_response(prompt)
+    
+    async def _generate_langchain(self, system: str, prompt: str) -> str:
+        """Generate using LangChain (enables LangSmith tracing)."""
+        from langchain_core.messages import SystemMessage, HumanMessage
+        
+        messages = [
+            SystemMessage(content=system),
+            HumanMessage(content=prompt),
+        ]
+        
+        # LangChain's invoke is sync, but we can run it
+        response = self.client.invoke(messages)
+        return response.content
     
     def _mock_response(self, prompt: str) -> str:
         """Generate mock responses for demo mode."""
@@ -609,6 +684,15 @@ Is root cause identified? What's the confidence level? What action should be tak
         else:
             print(f"\n{Colors.WARNING}  ⚠ No API key found - using realistic mock responses{Colors.RESET}")
             print(f"{Colors.DIM}    Set ANTHROPIC_API_KEY or OPENAI_API_KEY for live LLM integration{Colors.RESET}")
+        
+        # LangSmith tracing status
+        if self.llm.use_langchain:
+            project = os.environ.get("LANGCHAIN_PROJECT", "default")
+            print(f"{Colors.SUCCESS}  ✓ LangSmith Tracing: ENABLED (project: {project}){Colors.RESET}")
+            print(f"{Colors.DIM}    View traces at: https://smith.langchain.com{Colors.RESET}")
+        elif os.environ.get("LANGCHAIN_API_KEY"):
+            print(f"{Colors.WARNING}  ⚠ LangSmith: Key found but tracing disabled{Colors.RESET}")
+            print(f"{Colors.DIM}    Set LANGCHAIN_TRACING_V2=true to enable{Colors.RESET}")
         
         print(f"\n{Colors.INFO}  🎫 Ticket:{Colors.RESET}")
         print(f"     {ticket}")
